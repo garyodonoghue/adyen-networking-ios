@@ -15,7 +15,7 @@ public class Coder: AnyCoder {
     // MARK: - Decoding
     
     /// :nodoc:
-    public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+    public func decode<T, R>(_ type: T.Type, from data: Data, with headers: [AnyHashable : Any], and request: R) throws -> T where T: Decodable, R: Request {
         try decoder.decode(T.self, from: data)
     }
     

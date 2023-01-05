@@ -185,11 +185,11 @@ public final class APIClient: APIClientProtocol {
                 return HTTPResponse(
                     headers: result.headers,
                     statusCode: result.statusCode,
-                    responseBody: try coder.decode(R.ResponseType.self, from: result.data)
+                    responseBody: try coder.decode(R.ResponseType.self, from: result.data, with: result.headers, and: request)
                 )
             }
         } catch {
-            if let errorResponse = try? coder.decode(R.ErrorResponseType.self, from: result.data) {
+            if let errorResponse = try? coder.decode(R.ErrorResponseType.self, from: result.data, with: result.headers, and: request) {
                 throw HTTPErrorResponse(
                     headers: result.headers,
                     statusCode: result.statusCode,

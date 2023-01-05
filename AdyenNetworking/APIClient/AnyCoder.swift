@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol AnyCoder {
-    
-    func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T
+    func decode<T: Decodable, R: Request>(_ type: T.Type, from data: Data, with headers: [AnyHashable : Any], and request: R) throws -> T
     func encode<T: Encodable>(_ value: T) throws -> Data
 }
+
