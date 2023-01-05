@@ -175,21 +175,20 @@ public final class APIClient: APIClientProtocol {
     ) throws -> HTTPResponse<R.ResponseType> {
         log(result: result, request: request)
         do {
+            let response = try coder.decode(R.ResponseType.self, from: result.data, with: result.headers, and: request)
+            return HTTPResponse(
+                headers: result.headers,
+                statusCode: result.statusCode,
+                responseBody: response
+            )
+        } catch {
             if result.data.isEmpty, let emptyResponse = EmptyResponse() as? R.ResponseType {
                 return HTTPResponse(
                     headers: result.headers,
                     statusCode: result.statusCode,
                     responseBody: emptyResponse
                 )
-            } else {
-                return HTTPResponse(
-                    headers: result.headers,
-                    statusCode: result.statusCode,
-                    responseBody: try coder.decode(R.ResponseType.self, from: result.data, with: result.headers, and: request)
-                )
-            }
-        } catch {
-            if let errorResponse = try? coder.decode(R.ErrorResponseType.self, from: result.data, with: result.headers, and: request) {
+            } else if let errorResponse = try? coder.decode(R.ErrorResponseType.self, from: result.data, with: result.headers, and: request) {
                 throw HTTPErrorResponse(
                     headers: result.headers,
                     statusCode: result.statusCode,
@@ -210,12 +209,20 @@ public final class APIClient: APIClientProtocol {
     private func handle<R: Request>(
         _ result: URLSessionDownloadSuccess,
         _ request: R
-    ) -> HTTPResponse<R.ResponseType> where R.ResponseType == DownloadResponse {
+    ) throws -> HTTPResponse<R.ResponseType> where R.ResponseType == DownloadResponse {
         log(result: result, request: request)
+        
+        // todo Need to get the file in bytes (Data) and validate that
+        
+        let data = try Data(contentsOf: result.url)
+        
+        // todo Need to call decode just to invoke the resonse validation logic which feels wrong 
+        _ = try coder.decode(Data.self, from: data, with: result.headers, and: request)
+        
         return HTTPResponse(
             headers: result.headers,
             statusCode: result.statusCode,
-            responseBody: DownloadResponse(url: result.url)
+            responseBody: DownloadResponse(url: result.url) // todo
         )
     }
     
